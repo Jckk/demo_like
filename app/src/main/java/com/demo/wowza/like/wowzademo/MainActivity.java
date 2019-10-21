@@ -90,14 +90,20 @@ public class MainActivity extends AppCompatActivity {
         mWZBroadcastConfig.setVideoKeyFrameInterval(30);//设置关键帧间隔，即关键帧之间的帧数,默认30
         mWZBroadcastConfig.setVideoBitRate(liveBitrate);//设置视频比特率。//默认1500
         mWZBroadcastConfig.setAudioEnabled(true);//启用音频流
-
         mWZBroadcastConfig.setAudioSampleRate(WOWZMediaConfig.DEFAULT_AUDIO_SAMPLE_RATE);//设置音频采样率
         mWZBroadcastConfig.setAudioChannels(WOWZMediaConfig.AUDIO_CHANNELS_STEREO);//设置音频通道的数量。
         mWZBroadcastConfig.setAudioBitRate(WOWZMediaConfig.DEFAULT_AUDIO_BITRATE);//设置音频比特率
-
         mWZBroadcastConfig.setVideoBroadcaster(wowzCameraView);//设置视频播放器。
         mWZBroadcastConfig.setAudioBroadcaster(goCoderAudioDevice);//设置音频播放器
         //摄像机配置
+/*        WOWZMediaConfig wowzMediaConfig = new WOWZMediaConfig();
+        wowzMediaConfig.setVideoFrameSize(liveSize.getWidth(), liveSize.getHeight());
+        wowzMediaConfig.setVideoBitRate(liveBitrate);
+        wowzMediaConfig.setAudioBitRate(WOWZMediaConfig.DEFAULT_AUDIO_BITRATE);
+        wowzMediaConfig.setAudioChannels(WOWZMediaConfig.AUDIO_CHANNELS_STEREO);
+        wowzMediaConfig.setAudioSampleRate(WOWZMediaConfig.DEFAULT_AUDIO_SAMPLE_RATE);
+        wowzCameraView.setCameraConfig(wowzMediaConfig);*/
+
         wowzCameraView.setCameraConfig(mWZBroadcastConfig);
         new Handler().postDelayed(new Runnable() {
             @Override
