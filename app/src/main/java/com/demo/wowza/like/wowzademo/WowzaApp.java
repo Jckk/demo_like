@@ -15,8 +15,5 @@ public class WowzaApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        boolean isinit = WowzaGoCoder.isInitialized();
-      //  Log.i("info", "onCreate: 初始化"+isinit);
-
     }
 }

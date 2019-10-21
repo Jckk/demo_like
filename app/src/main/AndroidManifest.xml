@@ -42,15 +42,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WowzaDemoActivity">
-
-
-
-
-        </activity>
-        <activity android:name=".WowzaSample">
-
-        </activity>
     </application>
 
 </manifest>

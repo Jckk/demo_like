@@ -28,10 +28,18 @@
     </FrameLayout>
 
     <Button
-        android:id="@+id/btn"
-        android:text="zhibo"
+        android:id="@+id/change_cammer"
+        android:text="切换摄像头"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btn_start_boardcase"
+        android:text="开始推流"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        />
 
 
 </RelativeLayout>

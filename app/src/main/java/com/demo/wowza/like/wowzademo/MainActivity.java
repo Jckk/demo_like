@@ -26,33 +26,37 @@ import com.wowza.gocoder.sdk.api.geometry.WOWZSize;
 import com.wowza.gocoder.sdk.api.status.WOWZStatus;
 import com.wowza.gocoder.sdk.api.status.WOWZStatusCallback;
 
-public class MainActivity extends AppCompatActivity implements WOWZStatusCallback,WOWZCameraView.PreviewStatusListener {
+public class MainActivity extends AppCompatActivity {
     private WOWZCameraView wowzCameraView;
     private Size liveSize = new Size(1280, 720);
-    private int vodBitrate = 0;
-    private int liveBitrate = 0;
+    private int liveBitrate = 1500;
     private WowzaGoCoder mWowzaGoCoder;
-    private WOWZCamera mWZCamera;
     private WOWZAudioDevice goCoderAudioDevice;
     private WOWZBroadcast mWZBroadcast;
     private WOWZBroadcastConfig mWZBroadcastConfig;
-    private WOWZSize mWOWZSize;
 
-    private Button btn;
+    private Button change_cammer;
+    private Button btn_start_boardcase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.wowza);
         wowzCameraView = findViewById(R.id.cameraPreview);
-        wowzCameraView.startPreview();
         initWowza();
-        btn=findViewById(R.id.btn);
-        btn.setOnClickListener(new View.OnClickListener() {
+        change_cammer = findViewById(R.id.change_cammer);
+        btn_start_boardcase = findViewById(R.id.btn_start_boardcase);
+        change_cammer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(MainActivity.this,WowzaDemoActivity.class);
-                startActivity(intent);
+                WOWZCamera newCamera = wowzCameraView.switchCamera();//切换摄像头
+            }
+        });
+
+        btn_start_boardcase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mWZBroadcast.startBroadcast(mWZBroadcastConfig);//开始推流
             }
         });
 
@@ -60,69 +64,41 @@ public class MainActivity extends AppCompatActivity implements WOWZStatusCallbac
 
     private void initWowza() {
 
-        mWowzaGoCoder = WowzaGoCoder.init(this, "GOSK-0B47-010C-EE83-871C-3140");
-        mWZCamera = wowzCameraView.getCamera();
-        if (mWowzaGoCoder == null) {
-            WOWZError goCoderInitError = WowzaGoCoder.getLastError();
-         //   return;
-        }
-        boolean isinit = WowzaGoCoder.isInitialized();
+        mWowzaGoCoder = WowzaGoCoder.init(this, "GOSK-0B47-010C-EE83-871C-3140");//初始化SDK
+        //初始化音频
         goCoderAudioDevice = new WOWZAudioDevice();
         goCoderAudioDevice.setAudioEnabled(true);
-        goCoderAudioDevice.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-        Log.e("Test", "---");
-        goCoderAudioDevice.setMuted(true);
+        goCoderAudioDevice.setAudioSource(MediaRecorder.AudioSource.DEFAULT);//设置活动配置的输入设备以捕获音频。
+        goCoderAudioDevice.setMuted(true);//设置静音（推荐使用setAudioPaused暂停）
+        //推流和播放
         mWZBroadcast = new WOWZBroadcast();
         mWZBroadcastConfig = new WOWZBroadcastConfig();
-//        mWZBroadcastConfig.set(WOWZMediaConfig.FRAME_SIZE_1280x720);
-//        mWZBroadcastConfig.setVideoFrameSize(960, 540);
-        mWZBroadcastConfig.setVideoFrameSize(liveSize.getWidth(), liveSize.getHeight());
-        mWOWZSize = mWZBroadcastConfig.getVideoFrameSize();
-        //设置广播方向设置的值，该设置指定视频在其中流媒体的方向  960-->ALWAYS_LANDSCAPE
-        //WOWZMediaConfig.SAME_AS_SOURCE (default), WOWZMediaConfig.ALWAYS_LANDSCAPE, WOWZMediaConfig.ALWAYS_PORTRAIT
-        mWZBroadcastConfig.setOrientationBehavior(WOWZMediaConfig.ALWAYS_LANDSCAPE);
-
-
-        mWZBroadcastConfig.setHostAddress("stream.morecanai.com");
-        mWZBroadcastConfig.setPortNumber(1935);
-        mWZBroadcastConfig.setApplicationName("live");
-        //
-        mWZBroadcastConfig.setStreamName("123456");
-        mWZBroadcastConfig.setUsername("admin");
+        //流媒体设置
+        mWZBroadcastConfig.setHostAddress("stream.morecanai.com");//设置流服务器的主机名或IP地址。
+        mWZBroadcastConfig.setPortNumber(1935);//设置服务器连接端口号。
+        mWZBroadcastConfig.setApplicationName("live");//设置实时流应用程序的名称。
+        mWZBroadcastConfig.setStreamName("123456");//设置目标流名称。
+        mWZBroadcastConfig.setUsername("admin");//设置用于源身份验证的用户名。
         mWZBroadcastConfig.setPassword("admin");
-        //--------------------------------------
-        mWZBroadcastConfig.setVideoEnabled(true);
-        mWZBroadcastConfig.setABREnabled(true);
-        mWZBroadcastConfig.setHLSEnabled(true);
-        //
-//        mWZBroadcastConfig.setVideoFramerate(WOWZMediaConfig.DEFAULT_VIDEO_FRAME_RATE);
-//        mWZBroadcastConfig.setVideoKeyFrameInterval(WOWZMediaConfig.DEFAULT_VIDEO_KEYFRAME_INTERVAL);
+        //配置视频和音频，捕获和编码的属性。
+        mWZBroadcastConfig.setVideoFrameSize(liveSize.getWidth(), liveSize.getHeight());//使用指定的值设置视频帧的大小。
+        mWZBroadcastConfig.setOrientationBehavior(WOWZMediaConfig.ALWAYS_LANDSCAPE);//设置流广播的方向。
+        mWZBroadcastConfig.setVideoEnabled(true);//启用视频流。
+        mWZBroadcastConfig.setABREnabled(true);//启用自适应比特率（ABR）流。
+        mWZBroadcastConfig.setHLSEnabled(true);//指定通过Apple HLS的主要播放。
+        mWZBroadcastConfig.setVideoFramerate(30);//设置视频帧率。默认30
+        mWZBroadcastConfig.setVideoKeyFrameInterval(30);//设置关键帧间隔，即关键帧之间的帧数,默认30
+        mWZBroadcastConfig.setVideoBitRate(liveBitrate);//设置视频比特率。//默认1500
+        mWZBroadcastConfig.setAudioEnabled(true);//启用音频流
 
-        mWZBroadcastConfig.setVideoFramerate(25);
-        mWZBroadcastConfig.setVideoKeyFrameInterval(25);
-        mWZBroadcastConfig.setVideoBitRate(liveBitrate);
-        //
+        mWZBroadcastConfig.setAudioSampleRate(WOWZMediaConfig.DEFAULT_AUDIO_SAMPLE_RATE);//设置音频采样率
+        mWZBroadcastConfig.setAudioChannels(WOWZMediaConfig.AUDIO_CHANNELS_STEREO);//设置音频通道的数量。
+        mWZBroadcastConfig.setAudioBitRate(WOWZMediaConfig.DEFAULT_AUDIO_BITRATE);//设置音频比特率
 
-        mWZBroadcastConfig.setAudioEnabled(true);
-
-        mWZBroadcastConfig.setAudioSampleRate(WOWZMediaConfig.DEFAULT_AUDIO_SAMPLE_RATE);
-        mWZBroadcastConfig.setAudioChannels(WOWZMediaConfig.AUDIO_CHANNELS_STEREO);
-        mWZBroadcastConfig.setAudioBitRate(WOWZMediaConfig.DEFAULT_AUDIO_BITRATE);
-        //
-        //
-        mWZBroadcastConfig.setVideoBroadcaster(wowzCameraView);
-        mWZBroadcastConfig.setAudioBroadcaster(goCoderAudioDevice);
-
-        //
-        final WOWZMediaConfig wowzMediaConfig = new WOWZMediaConfig();
-        wowzMediaConfig.setVideoFrameSize(liveSize.getWidth(), liveSize.getHeight());
-        wowzMediaConfig.setVideoBitRate(liveBitrate);
-        wowzMediaConfig.setAudioBitRate(WOWZMediaConfig.DEFAULT_AUDIO_BITRATE);
-        wowzMediaConfig.setAudioChannels(WOWZMediaConfig.AUDIO_CHANNELS_STEREO);
-        wowzMediaConfig.setAudioSampleRate(WOWZMediaConfig.DEFAULT_AUDIO_SAMPLE_RATE);
-        //
-        wowzCameraView.setCameraConfig(wowzMediaConfig);
-
+        mWZBroadcastConfig.setVideoBroadcaster(wowzCameraView);//设置视频播放器。
+        mWZBroadcastConfig.setAudioBroadcaster(goCoderAudioDevice);//设置音频播放器
+        //摄像机配置
+        wowzCameraView.setCameraConfig(mWZBroadcastConfig);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -131,68 +107,13 @@ public class MainActivity extends AppCompatActivity implements WOWZStatusCallbac
                         if (wowzCameraView.isPreviewPaused()) {
                             wowzCameraView.onResume();
                         } else {
-                            wowzCameraView.startPreview();
+                            wowzCameraView.startPreview();//启动预览
                         }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-
                 }
-
             }
         }, 1000);
-//
-
-
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        wowzCameraView.startPreview();
-
-        //    WOWZCamera activeCamera = wowzCameraView.getCamera();
-           // if (activeCamera != null && activeCamera.hasCapability(WOWZCamera.FOCUS_MODE_CONTINUOUS))
-         //       activeCamera.setFocusMode(WOWZCamera.FOCUS_MODE_CONTINUOUS);
-            //    mWZBroadcast.startBroadcast(mWZBroadcastConfig);
-//
-//        mWZBroadcast.startBroadcast(mWZBroadcastConfig, new WOWZStatusCallback() {
-//            @Override
-//            public void onWZStatus(WOWZStatus wowzStatus) {
-//
-//            }
-//
-//            @Override
-//            public void onWZError(WOWZStatus wowzStatus) {
-//
-//            }
-//        });
-
-    }
-
-    @Override
-    public void onWZStatus(WOWZStatus wowzStatus) {
-
-    }
-
-    @Override
-    public void onWZError(WOWZStatus wowzStatus) {
-
-    }
-
-    @Override
-    public void onWZCameraPreviewStarted(WOWZCamera wowzCamera, WOWZSize wowzSize, int i) {
-
-    }
-
-    @Override
-    public void onWZCameraPreviewStopped(int i) {
-
-    }
-
-    @Override
-    public void onWZCameraPreviewError(WOWZCamera wowzCamera, WOWZError wowzError) {
-
-    }
-
 }
