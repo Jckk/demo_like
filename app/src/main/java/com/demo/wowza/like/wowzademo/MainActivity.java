@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         if (wowzCameraView.isPreviewPaused()) {
                             wowzCameraView.onResume();
                         } else {
-                            wowzCameraView.startPreview();//启动预览
+                            wowzCameraView.startPreview();//启动预览、、
                         }
                     }
                 } catch (Exception e) {
